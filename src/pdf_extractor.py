@@ -1,33 +1,38 @@
 from pathlib import Path
 from pypdf import PdfReader
+from src.ocr import extract_text_from_scanned_pdf, extract_text_from_image
 
-def extract_text_from_pdf(pdf_path: str | Path) -> str:
+def extract_text(file_path: str | Path) -> str:
     """
-    Extracts all selectable text from a PDF file page by page.
-    
-    Args:
-        pdf_path: Path to the target PDF file.
-        
-    Returns:
-        A single string containing all extracted text separated by newlines.
+    Smart hybrid extractor:
+    1. If image file (.png, .jpg, .jpeg), uses OCR directly.
+    2. If PDF, tries fast digital text extraction first.
+    3. If PDF has no text layer (scanned), automatically falls back to OCR.
     """
-    path = Path(pdf_path)
+    path = Path(file_path)
     if not path.exists():
-        raise FileNotFoundError(f"PDF file does not exist at: {path}")
+        raise FileNotFoundError(f"File not found: {path}")
 
+    # Case 1: Image files
+    if path.suffix.lower() in [".png", ".jpg", ".jpeg", ".tiff", ".bmp"]:
+        print(f"  [Image detected: using OCR for {path.name}]")
+        return extract_text_from_image(path)
+
+    # Case 2: PDF files - Try fast digital extraction first
     reader = PdfReader(path)
-    extracted_pages: list[str] = []
+    extracted_pages = []
+    for page in reader.pages:
+        extracted_pages.append(page.extract_text() or "")
+    
+    digital_text = "\n".join(extracted_pages).strip()
 
-    for index, page in enumerate(reader.pages):
-        page_text = page.extract_text() or ""
-        extracted_pages.append(page_text)
+    # If digital text exists, return it immediately (takes ~5ms)
+    if len(digital_text) > 30:
+        return digital_text
 
-    full_text = "\n".join(extracted_pages).strip()
-    return full_text
+    # Case 3: Scanned PDF fallback
+    print(f"  [Scanned PDF detected: falling back to OCR for {path.name}]")
+    return extract_text_from_scanned_pdf(path)
 
-if __name__ == "__main__":
-    sample_path = "data/input/sample_invoice.pdf"
-    print(f"--- Extracting text from: {sample_path} ---")
-    text = extract_text_from_pdf(sample_path)
-    print(text)
-    print("\n--- End of Extracted Text ---")
+# Backwards compatibility alias
+extract_text_from_pdf = extract_text

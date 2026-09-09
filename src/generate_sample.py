@@ -85,6 +85,30 @@ def generate_sample_batch():
         items=[["Express Shipping", 4, 30.0, 120.0]],
         subtotal=120.0, tax=12.0, total=132.0
     )
+def generate_scanned_invoice():
+    """Generates an invoice that is purely image pixels with no text layer."""
+    from pdf2image import convert_from_path
+    from PIL import Image
 
+    # 1. Generate normal invoice 4
+    temp_pdf = "data/input/temp_04.pdf"
+    create_invoice_pdf(
+        temp_pdf,
+        vendor="Apex Hardware Supplies",
+        inv_num="INV-2024-555",
+        date="2024-03-25",
+        customer="Nauman Enterprises",
+        items=[["Titanium Drill Bits", 2, 60.0, 120.0]],
+        subtotal=120.0, tax=12.0, total=132.0
+    )
+
+    # 2. Rasterize the page into an image (strip text layer completely)
+    images = convert_from_path(temp_pdf, dpi=200)
+    scanned_path = "data/input/invoice_04_scanned.pdf"
+    images[0].save(scanned_path, "PDF", resolution=100.0)
+
+    # 3. Clean up temp file
+    Path(temp_pdf).unlink(missing_ok=True)
+    print(f"✓ Created pure scanned image PDF: {scanned_path}")
 if __name__ == "__main__":
-    generate_sample_batch()
+    generate_scanned_invoice()
