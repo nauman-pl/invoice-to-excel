@@ -18,8 +18,8 @@ def export_invoices_to_excel(invoices: list[Invoice], output_path: str | Path) -
         inv_id = inv.invoice_number or "UNKNOWN"
         vendor_name = inv.vendor or "N/A"
 
-        # Sheet 1: Header summary
-        summary_rows.append({
+        # Sheet 1: Header summary with dynamic column expansion
+        row = {
             "Invoice Number": inv_id,
             "Vendor": vendor_name,
             "Customer": inv.customer or "N/A",
@@ -28,7 +28,13 @@ def export_invoices_to_excel(invoices: list[Invoice], output_path: str | Path) -
             "Subtotal ($)": inv.subtotal if inv.subtotal is not None else 0.0,
             "Tax ($)": inv.tax if inv.tax is not None else 0.0,
             "Total ($)": inv.total if inv.total is not None else 0.0,
-        })
+        }
+        # Dynamic Schema Adaptation: append any new custom fields as new Excel columns
+        if getattr(inv, "extra_fields", None):
+            for k, v in inv.extra_fields.items():
+                col_name = k.replace("_", " ").title()
+                row[col_name] = v
+        summary_rows.append(row)
 
         # Sheet 2: Line items detail
         for item in inv.items:

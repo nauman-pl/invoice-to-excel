@@ -27,6 +27,7 @@ class InvoiceSchema(BaseModel):
     subtotal: Optional[float] = Field(default=None, description="Sum of line items before tax and discount")
     tax: Optional[float] = Field(default=None, description="Total tax, VAT, or GST amount")
     total: Optional[float] = Field(default=None, description="Grand total amount due")
+    extra_fields: dict[str, str] = Field(default_factory=dict, description="Any other extra custom fields found such as PO Number, Discount, Due Date, Shipping, Payment Terms, Notes")
 
 def extract_invoice_with_ai(raw_text: str) -> tuple[Invoice, ValidationResult]:
     """
@@ -79,6 +80,7 @@ def extract_invoice_with_ai(raw_text: str) -> tuple[Invoice, ValidationResult]:
         subtotal=extracted_data.subtotal,
         tax=extracted_data.tax,
         total=extracted_data.total,
+        extra_fields=extracted_data.extra_fields,
     )
 
     # Run our mathematical validation safety net!

@@ -21,6 +21,7 @@ class Invoice:
     subtotal: Optional[float] = None
     tax: Optional[float] = None
     total: Optional[float] = None
+    extra_fields: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         """Converts the invoice and its items into a standard Python dictionary."""
