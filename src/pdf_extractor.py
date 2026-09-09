@@ -14,7 +14,7 @@ def extract_text(file_path: str | Path) -> str:
         raise FileNotFoundError(f"File not found: {path}")
 
     # Case 1: Image files
-    if path.suffix.lower() in [".png", ".jpg", ".jpeg", ".tiff", ".bmp"]:
+    if path.suffix.lower() in [".png", ".jpg", ".jpeg", ".tiff", ".bmp", ".webp"]:
         print(f"  [Image detected: using OCR for {path.name}]")
         return extract_text_from_image(path)
 
