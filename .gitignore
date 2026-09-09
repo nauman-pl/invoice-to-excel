@@ -1,0 +1,15 @@
+# Virtual environment
+.venv/
+
+# Python bytecode / caches
+__pycache__/
+*.pyc
+
+# macOS hidden system files
+.DS_Store
+
+# Environment variables / secrets (for later)
+.env
+
+# Output files (generated spreadsheets)
+data/output/
