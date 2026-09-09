@@ -63,8 +63,12 @@ def parse_invoice_text(text: str) -> Invoice:
     if vendor_match:
         invoice.vendor = vendor_match.group(1).replace("\\", "").strip()
 
-    # 2. Invoice Number
-    inv_num_match = re.search(r"(?:Invoice\s*(?:Number|No\.?|#)|Inv\s*#|Invoice\s*:)[:\s]*([A-Za-z0-9-_]+)", text, re.IGNORECASE)
+    # 2. Invoice Number: supports Invoice No, Inv #, Bill No, Bill #, Tax Invoice #
+    inv_num_match = re.search(
+        r"(?:(?:Tax\s+)?Invoice\s*(?:Number|No\.?|#)|Bill\s*(?:Number|No\.?|#)|Inv\s*#|Invoice\s*:)[:\s]*([A-Za-z0-9-_]+)",
+        text,
+        re.IGNORECASE
+    )
     if inv_num_match:
         invoice.invoice_number = inv_num_match.group(1).strip()
 
