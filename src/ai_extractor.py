@@ -40,7 +40,14 @@ def extract_invoice_with_ai(raw_text: str) -> tuple[Invoice, ValidationResult]:
     """
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        raise ValueError("GEMINI_API_KEY is not set in .env file.")
+        try:
+            import streamlit as st
+            api_key = st.secrets.get("GEMINI_API_KEY")
+        except Exception:
+            pass
+
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY is not set in .env file or Streamlit Secrets.")
 
     client = genai.Client(api_key=api_key)
 

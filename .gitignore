@@ -13,3 +13,8 @@ __pycache__/
 
 # Output files (generated spreadsheets)
 data/output/
+
+# SQLite Database
+*.db
+*.sqlite3
+*.db-journal

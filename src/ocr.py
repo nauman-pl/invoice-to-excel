@@ -1,7 +1,20 @@
+import platform
 from pathlib import Path
 from PIL import Image
 import pytesseract
 from pdf2image import convert_from_path
+
+# Auto-detect Tesseract installation on Windows
+if platform.system() == "Windows":
+    win_paths = [
+        Path(r"C:\Program Files\Tesseract-OCR\tesseract.exe"),
+        Path(r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe"),
+        Path(r"C:\Users\AppData\Local\Tesseract-OCR\tesseract.exe")
+    ]
+    for p in win_paths:
+        if p.exists():
+            pytesseract.pytesseract.tesseract_cmd = str(p)
+            break
 
 def extract_text_from_image(image_path: str | Path) -> str:
     """
