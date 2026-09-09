@@ -46,6 +46,7 @@ if uploaded_files:
     if st.button("🚀 Process Invoices", type="primary"):
         processed_invoices: list[Invoice] = []
         validation_results: list[ValidationResult] = []
+        seen_invoices = set()
         
         progress_bar = st.progress(0)
         status_text = st.empty()
@@ -69,6 +70,21 @@ if uploaded_files:
                 else:
                     invoice = parse_invoice_text(raw_text)
                     val_result = validate_invoice(invoice)
+
+                # 3. Duplicate Detection Check
+                invoice_key = (
+                    (invoice.vendor or "").strip().lower(),
+                    (invoice.invoice_number or "").strip().lower()
+                )
+                if invoice_key != ("", "") and invoice_key in seen_invoices:
+                    val_result.is_valid = False
+                    val_result.warnings.append(
+                        f"DUPLICATE: Invoice '{invoice.invoice_number}' from '{invoice.vendor}' was already processed!"
+                    )
+                    val_result.confidence_score = min(val_result.confidence_score, 0.30)
+                else:
+                    if invoice_key != ("", ""):
+                        seen_invoices.add(invoice_key)
 
                 processed_invoices.append(invoice)
                 validation_results.append(val_result)
@@ -94,9 +110,9 @@ if uploaded_files:
                     "Vendor": inv.vendor or "N/A",
                     "Date": inv.date or "N/A",
                     "Items Count": len(inv.items),
-                    "Subtotal ($)": f"${inv.subtotal:.2f}" if inv.subtotal else "$0.00",
-                    "Tax ($)": f"${inv.tax:.2f}" if inv.tax else "$0.00",
-                    "Total ($)": f"${inv.total:.2f}" if inv.total else "$0.00",
+                    "Subtotal ($)": f"${inv.subtotal:.2f}" if inv.subtotal is not None else "$0.00",
+                    "Tax ($)": f"${inv.tax:.2f}" if inv.tax is not None else "$0.00",
+                    "Total ($)": f"${inv.total:.2f}" if inv.total is not None else "$0.00",
                     "Confidence": f"{val.confidence_score * 100:.0f}%",
                     "Status": "✅ Verified" if val.is_valid else "⚠️ Review Needed",
                     "Warnings": "; ".join(val.warnings) if val.warnings else "None"
